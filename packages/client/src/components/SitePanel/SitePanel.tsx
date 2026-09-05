@@ -654,7 +654,7 @@ export function SitePanel({
   // Handle open/close animation
   useEffect(() => {
     if (isOpen) {
-      setShouldRender(true);
+      setTimeout(() => setShouldRender(true), 0);
       // Small delay to trigger CSS transition
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -662,7 +662,7 @@ export function SitePanel({
         });
       });
     } else {
-      setIsAnimating(false);
+      setTimeout(() => setIsAnimating(false), 0);
       // Wait for animation to finish before unmounting
       const timer = setTimeout(() => {
         setShouldRender(false);

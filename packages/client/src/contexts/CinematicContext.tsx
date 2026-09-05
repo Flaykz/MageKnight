@@ -105,6 +105,7 @@ export function CinematicProvider({ children }: { children: ReactNode }) {
   const stepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track if cinematics are blocked
   const blockCountRef = useRef(0);
+  const [blockCount, setBlockCount] = useState(0);
 
   // Use a ref to break the circular dependency between executeStep and advanceToNextStep
   const advanceToNextStepRef = useRef<(sequence: CinematicSequence, currentIndex: number) => void>(() => {});
@@ -163,7 +164,9 @@ export function CinematicProvider({ children }: { children: ReactNode }) {
   }, [executeStep]);
 
   // Keep the ref in sync with the latest callback
-  advanceToNextStepRef.current = advanceToNextStep;
+  useEffect(() => {
+    advanceToNextStepRef.current = advanceToNextStep;
+  }, [advanceToNextStep]);
 
   /**
    * Start playing a cinematic sequence
@@ -239,8 +242,13 @@ export function CinematicProvider({ children }: { children: ReactNode }) {
    */
   const blockCinematics = useCallback((): (() => void) => {
     blockCountRef.current += 1;
+    setBlockCount((count) => count + 1);
+    let isBlocked = true;
     return () => {
+      if (!isBlocked) return;
+      isBlocked = false;
       blockCountRef.current -= 1;
+      setBlockCount((count) => Math.max(0, count - 1));
     };
   }, []);
 
@@ -253,7 +261,7 @@ export function CinematicProvider({ children }: { children: ReactNode }) {
     playCinematic,
     completeStep,
     requestSkip,
-    areCinematicsBlocked: blockCountRef.current > 0,
+    areCinematicsBlocked: blockCount > 0,
     blockCinematics,
   };
 

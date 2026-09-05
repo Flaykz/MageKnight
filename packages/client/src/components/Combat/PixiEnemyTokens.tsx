@@ -64,7 +64,9 @@ export function PixiEnemyTokens({ enemies, onEnemyClick }: PixiEnemyTokensProps)
 
   // Stable callback ref
   const onEnemyClickRef = useRef(onEnemyClick);
-  onEnemyClickRef.current = onEnemyClick;
+  useEffect(() => {
+    onEnemyClickRef.current = onEnemyClick;
+  }, [onEnemyClick]);
 
   // Calculate token size based on viewport (matching CSS clamp)
   const getTokenSize = useCallback(() => {
@@ -96,7 +98,7 @@ export function PixiEnemyTokens({ enemies, onEnemyClick }: PixiEnemyTokensProps)
 
   // Preload enemy textures
   useEffect(() => {
-    setTexturesLoaded(false);
+    const resetTimer = setTimeout(() => setTexturesLoaded(false), 0);
 
     const loadTextures = async () => {
       const urls = enemies.map((e) => getEnemyImageUrl(e.enemy.enemyId));
@@ -119,6 +121,7 @@ export function PixiEnemyTokens({ enemies, onEnemyClick }: PixiEnemyTokensProps)
     };
 
     loadTextures();
+    return () => clearTimeout(resetTimer);
   }, [enemies]);
 
   // Build the enemy tokens

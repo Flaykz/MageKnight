@@ -8,7 +8,7 @@
  * - Empty Hand: confirm completion with 0 cards (when all wounds healed during rest)
  */
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { CARD_WOUND } from "@mage-knight/shared";
 import type { CardId } from "@mage-knight/shared";
 import { useGame } from "../../hooks/useGame";
@@ -30,8 +30,9 @@ export function RestCompletionOverlay() {
   useRegisterOverlay(isActive);
 
   // Find CompleteRest legal actions (one per valid discard index)
-  const completeRestActions = legalActions.filter(
-    (a) => typeof a !== "string" && "CompleteRest" in a
+  const completeRestActions = useMemo(
+    () => legalActions.filter((a) => typeof a !== "string" && "CompleteRest" in a),
+    [legalActions]
   );
   const canUndo = hasAction(legalActions, "Undo");
 
@@ -54,7 +55,7 @@ export function RestCompletionOverlay() {
         if (action) sendAction(action);
       }
     },
-    [sendAction, legalActions, completeRestActions, player?.hand]
+    [sendAction, legalActions, completeRestActions, player]
   );
 
   const handleUndo = useCallback(() => {

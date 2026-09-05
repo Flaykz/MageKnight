@@ -9,7 +9,7 @@
  * onto the tray one by one with a satisfying bounce.
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useGame } from "../../hooks/useGame";
 import { useMyPlayer } from "../../hooks/useMyPlayer";
 import {
@@ -99,7 +99,7 @@ export function ManaSourceOverlay() {
   useEffect(() => {
     if (isIntroComplete && !hasAnimatedRef.current) {
       hasAnimatedRef.current = true;
-      setIntroAnimState("visible");
+      requestAnimationFrame(() => setIntroAnimState("visible"));
     }
   }, [isIntroComplete]);
 
@@ -127,7 +127,7 @@ export function ManaSourceOverlay() {
 
     // Trigger animation for changed dice
     if (changedDieIds.length > 0) {
-      setRollingDieIds(new Set(changedDieIds));
+      const startTimer = setTimeout(() => setRollingDieIds(new Set(changedDieIds)), 0);
 
       // Clear animation after it completes (with stagger time)
       const totalDuration =
@@ -136,7 +136,7 @@ export function ManaSourceOverlay() {
         setRollingDieIds(new Set());
       }, totalDuration);
 
-      return () => clearTimeout(timeout);
+      return () => { clearTimeout(startTimer); clearTimeout(timeout); };
     }
   }, [state?.source.dice]);
 
@@ -164,23 +164,22 @@ export function ManaSourceOverlay() {
 
     // Trigger animation for newly taken dice
     if (newlyTakenDieIds.length > 0) {
-      setTakenDieIds(new Set(newlyTakenDieIds));
+      const startTimer = setTimeout(() => setTakenDieIds(new Set(newlyTakenDieIds)), 0);
 
       const timeout = setTimeout(() => {
         setTakenDieIds(new Set());
       }, TAKEN_ANIMATION_MS);
 
-      return () => clearTimeout(timeout);
+      return () => { clearTimeout(startTimer); clearTimeout(timeout); };
     }
   }, [state?.source.dice]);
 
   // Derive available dice from source state — untaken dice are clickable
-  const availableDice: readonly AvailableDie[] = useMemo(() => {
-    if (!state?.source.dice) return [];
-    return state.source.dice
-      .filter((d) => !d.takenByPlayerId)
-      .map((d) => ({ dieId: d.id, color: d.color }));
-  }, [state?.source.dice]);
+  const availableDice: readonly AvailableDie[] = state?.source.dice
+    ? state.source.dice
+        .filter((d) => !d.takenByPlayerId)
+        .map((d) => ({ dieId: d.id, color: d.color }))
+    : [];
 
   const handleDieClick = useCallback((_dieId: string, dieColor: ManaColor) => {
     // Basic color dice: no standalone action needed (mana sourced inline via card play)

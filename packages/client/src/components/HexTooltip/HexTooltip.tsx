@@ -97,11 +97,8 @@ export function HexTooltip({
 
   // Reset animation when tooltip becomes visible
   useEffect(() => {
-    if (isVisible) {
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-    }
+    const timer = setTimeout(() => setIsAnimating(isVisible), 0);
+    return () => clearTimeout(timer);
   }, [isVisible, coord?.q, coord?.r]);
 
   // Don't render if no data or not visible

@@ -404,7 +404,8 @@ function CombatOverlayInner({ combat }: CombatOverlayProps) {
 
   // Reset damage assignment panel when phase changes
   useEffect(() => {
-    setDamageAssignmentEnemy(null);
+    const timer = setTimeout(() => setDamageAssignmentEnemy(null), 0);
+    return () => clearTimeout(timer);
   }, [phase]);
 
   // Calculate token positions for PixiEnemyCard (must match PixiEnemyTokens layout)

@@ -73,9 +73,9 @@ export function App() {
 
   // Initial load and auto-refresh
   useEffect(() => {
-    refresh();
+    const initialRefresh = setTimeout(refresh, 0);
     const interval = setInterval(refresh, 2000);
-    return () => clearInterval(interval);
+    return () => { clearTimeout(initialRefresh); clearInterval(interval); };
   }, [refresh]);
 
   // Clear message after a delay

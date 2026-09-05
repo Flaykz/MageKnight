@@ -592,9 +592,16 @@ export function PixiAttackPool({
     rootContainer.position.set(poolPos.x - totalWidth / 2, poolPos.y);
 
     // Render sections
-    let xOffset = POOL_PADDING;
-
     sections.forEach((section, sectionIndex) => {
+      const xOffset =
+        POOL_PADDING +
+        sections.slice(0, sectionIndex).reduce((offset, previousSection, previousIndex) => {
+          const previousChipsWidth =
+            previousSection.chips.length * (CHIP_WIDTH + CHIP_GAP) - CHIP_GAP;
+          const previousSectionWidth = Math.max(80, previousChipsWidth);
+          return offset + previousSectionWidth +
+            (previousIndex < sections.length - 1 ? SECTION_GAP : 0);
+        }, 0);
       const sectionContainer = new Container();
       sectionContainer.label = `section-${section.type}`;
       sectionContainer.position.set(xOffset, POOL_PADDING);
@@ -667,24 +674,22 @@ export function PixiAttackPool({
       sectionContainer.addChild(chipsContainer);
       rootContainer.addChild(sectionContainer);
 
-      // Calculate section width
-      const chipsWidth = section.chips.length * (CHIP_WIDTH + CHIP_GAP) - CHIP_GAP;
-      const sectionWidth = Math.max(80, chipsWidth);
-      xOffset += sectionWidth;
-
       // Section divider
       if (sectionIndex < sections.length - 1) {
         const divider = new Graphics();
-        divider.moveTo(xOffset + SECTION_GAP / 2, 8);
-        divider.lineTo(xOffset + SECTION_GAP / 2, poolHeight - 8);
+        const sectionWidth = Math.max(
+          80,
+          section.chips.length * (CHIP_WIDTH + CHIP_GAP) - CHIP_GAP
+        );
+        const dividerX = xOffset + sectionWidth + SECTION_GAP / 2;
+        divider.moveTo(dividerX, 8);
+        divider.lineTo(dividerX, poolHeight - 8);
         divider.stroke({ color: COLORS.POOL_BORDER, width: 1, alpha: 0.25 });
         rootContainer.addChild(divider);
-        xOffset += SECTION_GAP;
       }
     });
 
     // Attach global pointer handlers to stage
-    app.stage.eventMode = "static";
     app.stage.on("pointermove", handlePointerMove);
     app.stage.on("pointerup", handlePointerUp);
     app.stage.on("pointerupoutside", handlePointerUp);

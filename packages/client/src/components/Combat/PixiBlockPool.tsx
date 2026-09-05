@@ -538,7 +538,6 @@ export function PixiBlockPool({ availableBlock }: PixiBlockPoolProps) {
     rootContainer.addChild(sectionContainer);
 
     // Attach global pointer handlers to stage
-    app.stage.eventMode = "static";
     app.stage.on("pointermove", handlePointerMove);
     app.stage.on("pointerup", handlePointerUp);
     app.stage.on("pointerupoutside", handlePointerUp);

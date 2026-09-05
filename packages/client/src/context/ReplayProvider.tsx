@@ -139,10 +139,13 @@ export function ReplayProvider({ artifact, playerId, artifactName, children }: R
   const [speed, setSpeed] = useState(1);
 
   const frameIndexRef = useRef(frameIndex);
-  frameIndexRef.current = frameIndex;
-
   const speedRef = useRef(speed);
-  speedRef.current = speed;
+  useEffect(() => {
+    frameIndexRef.current = frameIndex;
+  }, [frameIndex]);
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
 
   const maxIndex = frames.length - 1;
 

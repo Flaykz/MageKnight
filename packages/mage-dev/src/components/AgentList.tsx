@@ -8,6 +8,13 @@ interface AgentListProps {
 }
 
 export function AgentList({ agents, selectedIndex }: AgentListProps) {
+  const [now, setNow] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <Box
       flexDirection="column"
@@ -21,11 +28,12 @@ export function AgentList({ agents, selectedIndex }: AgentListProps) {
         </Text>
       ) : (
         agents.map((agent, index) => (
-          <AgentRow
+            <AgentRow
             key={agent.issueNumber > 0 ? agent.issueNumber : `pending-${index}`}
             agent={agent}
-            isSelected={index === selectedIndex}
-          />
+              isSelected={index === selectedIndex}
+              now={now}
+            />
         ))
       )}
     </Box>
@@ -35,9 +43,10 @@ export function AgentList({ agents, selectedIndex }: AgentListProps) {
 interface AgentRowProps {
   agent: Agent;
   isSelected: boolean;
+  now: number;
 }
 
-function AgentRow({ agent, isSelected }: AgentRowProps) {
+function AgentRow({ agent, isSelected, now }: AgentRowProps) {
   const pointer = isSelected ? "│" : " ";
   const bullet = isSelected ? "●" : "○";
 
@@ -58,7 +67,7 @@ function AgentRow({ agent, isSelected }: AgentRowProps) {
 
   // Format runtime if running
   const runtime = agent.startTime
-    ? formatDuration(Date.now() - agent.startTime.getTime())
+    ? formatDuration(Math.max(0, now - agent.startTime.getTime()))
     : "";
 
   return (

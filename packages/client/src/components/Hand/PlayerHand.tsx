@@ -66,16 +66,10 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
   // Track previous tactic selection state to detect when selection completes
   const prevNeedsTacticRef = useRef<boolean | null>(null); // null = not yet initialized
 
-  // Track previous view mode (excluding offer) so children don't transition when entering offer view
-  // This prevents expensive transform changes while the carousel is fading out
-  const prevViewModeRef = useRef<Exclude<HandView, "offer">>("ready");
-
-  // Update prevViewModeRef when handView changes to a non-offer mode
-  useEffect(() => {
-    if (handView !== "offer") {
-      prevViewModeRef.current = handView as Exclude<HandView, "offer">;
-    }
-  }, [handView]);
+  // Keep the carousels in their stable ready state while the offer view is open.
+  // This avoids reading a mutable ref during render and prevents a transition
+  // while the offer carousel is fading out.
+  const carouselViewMode: Exclude<HandView, "offer"> = handView === "offer" ? "ready" : handView;
 
   // Auto-navigate to tactics pane when tactic selection is needed (start of round)
   // Auto-navigate away from tactics pane when tactic is selected
@@ -84,16 +78,16 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
 
     if (isFirstRun && needsTacticSelection) {
       // Initial load and tactic selection is needed - start on tactics pane
-      setCarouselPane("tactics");
+      setTimeout(() => setCarouselPane("tactics"), 0);
     } else if (needsTacticSelection && prevNeedsTacticRef.current === false) {
       // Tactic selection just became needed (new round started)
-      setCarouselPane("tactics");
+      setTimeout(() => setCarouselPane("tactics"), 0);
     } else if (!needsTacticSelection && prevNeedsTacticRef.current === true) {
       // Tactic was just selected, move to cards
-      setCarouselPane("cards");
+      setTimeout(() => setCarouselPane("cards"), 0);
     } else if (!needsTacticSelection && carouselPane === "tactics") {
       // Edge case: on tactics pane but shouldn't be (e.g., page load after selection)
-      setCarouselPane("cards");
+      setTimeout(() => setCarouselPane("cards"), 0);
     }
     prevNeedsTacticRef.current = needsTacticSelection;
   }, [needsTacticSelection, carouselPane]);
@@ -114,7 +108,8 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
       cardInteractionState.type === "effect-choice";
 
     if (shouldClearMenu && menuState.type === "card-action") {
-      setMenuState({ type: "none" });
+      const timer = setTimeout(() => setMenuState({ type: "none" }), 0);
+      return () => clearTimeout(timer);
     }
   }, [cardInteractionState.type, menuState.type]);
 
@@ -244,7 +239,7 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
               au.abilities.some(a => a.canActivate)
       );
       if (!stillActivatable) {
-        setMenuState({ type: "none" });
+        setTimeout(() => setMenuState({ type: "none" }), 0);
       }
     }
   }, [activatableUnits, menuState]);
@@ -328,7 +323,7 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
     <>
       {/* PixiJS Tactic Carousel - renders to overlay layer, visibility controlled by isActive */}
       <PixiTacticCarousel
-        viewMode={handView === "offer" ? prevViewModeRef.current : handView}
+        viewMode={carouselViewMode}
         isActive={carouselPane === "tactics"}
       />
 
@@ -340,7 +335,7 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
         onCardClick={handleCardClick}
         deckCount={player.deckCount}
         discardCount={player.discardCount}
-        viewMode={handView === "offer" ? prevViewModeRef.current : handView}
+        viewMode={carouselViewMode}
         isActive={carouselPane === "cards"}
         inCombat={state.combat != null}
       />
@@ -348,7 +343,7 @@ export function PlayerHand({ onOfferViewChange }: PlayerHandProps = {}) {
       {/* PixiJS Unit Carousel - renders to overlay layer, visibility controlled by isActive */}
       <PixiUnitCarousel
         units={player.units}
-        viewMode={handView === "offer" ? prevViewModeRef.current : handView}
+        viewMode={carouselViewMode}
         commandTokens={player.commandTokens}
         isActive={carouselPane === "units"}
         activatableUnits={activatableUnits}
