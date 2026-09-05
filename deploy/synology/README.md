@@ -1,6 +1,6 @@
 # Déploiement sur Synology
 
-Les images publiées sur GHCR supportent `linux/amd64` et `linux/arm64`. Le
+Les images publiées sur GHCR ciblent `linux/amd64`. Le
 client et le serveur restent dans deux conteneurs afin que chaque processus
 ait son propre cycle de vie, mais ils forment un seul projet Container Manager.
 

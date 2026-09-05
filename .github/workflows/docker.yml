@@ -50,7 +50,7 @@ jobs:
       - uses: docker/build-push-action@v7
         with:
           context: packages/engine-rs
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           cache-from: type=gha,scope=mk-server
           cache-to: type=gha,mode=max,scope=mk-server
@@ -97,7 +97,7 @@ jobs:
         with:
           context: .
           file: packages/client/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           cache-from: type=gha,scope=mk-client
           cache-to: type=gha,mode=max,scope=mk-client
