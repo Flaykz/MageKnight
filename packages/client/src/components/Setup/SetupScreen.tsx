@@ -36,6 +36,7 @@ import { SetupSpine, type SetupStepKey } from "./SetupSpine";
 import { AdventureStep } from "./AdventureStep";
 import { MusterStep } from "./MusterStep";
 import { MarchReview } from "./MarchReview";
+import { useI18n } from "../../i18n";
 import "./SetupScreen.css";
 
 const SETUP_MAX_PLAYERS = 4;
@@ -268,6 +269,7 @@ interface SetupScreenProps {
 const STEP_ORDER: readonly SetupStepKey[] = ["adventure", "party", "march"];
 
 export function SetupScreen({ onComplete }: SetupScreenProps) {
+  const { locale, scenarioCopy } = useI18n();
   const [step, setStep] = useState<SetupStepKey>("adventure");
   /** Highest step the player has unlocked — gates spine navigation. */
   const [maxStep, setMaxStep] = useState(0);
@@ -279,6 +281,18 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
   const [activeSeatIndex, setActiveSeatIndex] = useState(0);
 
   const scenario = getSetupScenario(selectedScenarioKey);
+  const localizedScenarios = useMemo(
+    () => SETUP_SCENARIOS.map((entry) => ({ ...entry, ...scenarioCopy(entry.key, entry) })),
+    [locale, scenarioCopy]
+  );
+  const localizedScenario = localizedScenarios.find((entry) => entry.key === selectedScenarioKey) ?? scenario;
+  const localizedCategoryLabels = locale === "fr"
+    ? {
+        [SETUP_CATEGORY_LEARNING]: "Apprendre les terres",
+        [SETUP_CATEGORY_CONQUEST]: "Conquête",
+        [SETUP_CATEGORY_DRILLS]: "Terrain d’entraînement",
+      }
+    : SETUP_CATEGORY_LABELS;
   const stepIndex = STEP_ORDER.indexOf(step);
   const allSelected = useMemo(
     () => selectedHeroes.length === playerCount && selectedHeroes.every((h) => h !== null),
@@ -374,7 +388,7 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
       <SetupSpine
         stepIndex={stepIndex}
         maxStep={maxStep}
-        scenarioTitle={scenario.title}
+        scenarioTitle={localizedScenario.title}
         playerCount={playerCount}
         filledCount={filledCount}
         activeSeatIndex={activeSeatIndex}
@@ -383,10 +397,10 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
 
       {step === "adventure" && (
         <AdventureStep
-          scenarios={SETUP_SCENARIOS}
-          categoryLabels={SETUP_CATEGORY_LABELS}
+          scenarios={localizedScenarios}
+          categoryLabels={localizedCategoryLabels}
           selectedScenarioKey={selectedScenarioKey}
-          scenario={scenario}
+          scenario={localizedScenario}
           playerCount={playerCount}
           maxPlayers={SETUP_MAX_PLAYERS}
           isLaunchable={isLaunchable}
@@ -412,7 +426,7 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
 
       {step === "march" && (
         <MarchReview
-          scenario={scenario}
+          scenario={localizedScenario}
           seats={selectedHeroes}
           isLaunchable={isLaunchable}
           onBack={() => setStep("party")}

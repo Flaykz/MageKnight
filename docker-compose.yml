@@ -1,26 +1,22 @@
 services:
   mk-server:
-    image: ${SERVER_IMAGE:-ghcr.io/mage-knight-digital/mk-server:latest}
+    image: ${MK_SERVER_IMAGE:-ghcr.io/flaykz/mk-server:latest}
     restart: unless-stopped
     environment:
       PORT: "3030"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:3030/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
   mk-client:
-    image: ${CLIENT_IMAGE:-ghcr.io/mage-knight-digital/mk-client:latest}
+    image: ${MK_CLIENT_IMAGE:-ghcr.io/flaykz/mk-client:latest}
     restart: unless-stopped
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.synology", "--adapter", "caddyfile"]
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN}
-      API_DOMAIN: ${API_DOMAIN}
+      - "${MK_HTTP_PORT:-8080}:80"
     depends_on:
-      - mk-server
-
-volumes:
-  caddy_data:
-  caddy_config:
+      mk-server:
+        condition: service_healthy

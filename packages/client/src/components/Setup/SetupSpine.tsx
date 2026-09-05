@@ -5,6 +5,8 @@
  * steps are clickable to step back; future steps are locked.
  */
 
+import { useI18n } from "../../i18n";
+
 const SETUP_STEP_ADVENTURE = "adventure" as const;
 const SETUP_STEP_PARTY = "party" as const;
 const SETUP_STEP_MARCH = "march" as const;
@@ -45,14 +47,18 @@ export function SetupSpine({
   activeSeatIndex,
   onGoToStep,
 }: SetupSpineProps) {
+  const { locale, setLocale, t } = useI18n();
+  const localizedSteps = locale === "fr"
+    ? ["Aventure", "Compagnie", "Marche"]
+    : ["Adventure", "Party", "March"];
   return (
     <header className="setup-spine">
       <div className="setup-spine__brand">
         <b>Mage Knight</b>
-        <span>The Muster</span>
+        <span>{t("setup.theMuster")}</span>
       </div>
 
-      <nav className="setup-spine__steps" aria-label="Setup progress">
+      <nav className="setup-spine__steps" aria-label={t("setup.progress")}>
         {SETUP_SPINE_STEPS.map((spineStep, index) => {
           const state =
             index === stepIndex ? "is-active" : index < stepIndex ? "is-done" : "";
@@ -73,7 +79,7 @@ export function SetupSpine({
                 aria-current={index === stepIndex ? "step" : undefined}
               >
                 <span className="setup-spine__numeral">{spineStep.numeral}</span>
-                <span className="setup-spine__label">{spineStep.label}</span>
+                <span className="setup-spine__label">{localizedSteps[index]}</span>
               </button>
             </div>
           );
@@ -83,11 +89,11 @@ export function SetupSpine({
       <div className="setup-spine__context">
         {stepIndex >= 1 ? (
           <>
-            <span className="setup-spine__context-label">Scenario</span>
+            <span className="setup-spine__context-label">{t("setup.scenario")}</span>
             <span className="setup-spine__context-value">{scenarioTitle}</span>
           </>
         ) : (
-          <span className="setup-spine__context-label">Council of the Void</span>
+          <span className="setup-spine__context-label">{t("setup.council")}</span>
         )}
         {stepIndex === 1 && (
           <span
@@ -105,6 +111,14 @@ export function SetupSpine({
           </span>
         )}
       </div>
+
+      <label className="setup-spine__language">
+        <span className="sr-only">{t("language.label")}</span>
+        <select value={locale} onChange={(event) => setLocale(event.target.value as "en" | "fr")}>
+          <option value="en">{t("language.english")}</option>
+          <option value="fr">{t("language.french")}</option>
+        </select>
+      </label>
     </header>
   );
 }

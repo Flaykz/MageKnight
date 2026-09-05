@@ -8,6 +8,7 @@
 import type { HeroId } from "@mage-knight/shared";
 import { HERO_NAMES } from "@mage-knight/shared";
 import { assetUrl, getHeroTokenUrl } from "../../assets/assetPaths";
+import { useI18n } from "../../i18n";
 import type { SetupScenarioOption } from "./SetupScreen";
 
 /** Backdrop art per scenario category, sourced from existing site art. */
@@ -32,6 +33,7 @@ export function MarchReview({
   onBack,
   onLaunch,
 }: MarchReviewProps) {
+  const { t } = useI18n();
   const party = seats.filter((s): s is HeroId => s !== null);
   const art = SETUP_SCENARIO_ART[scenario.category];
 
@@ -46,8 +48,8 @@ export function MarchReview({
       )}
 
       <div className="setup-march__head">
-        <p className="setup-eyebrow">The muster is assembled</p>
-        <h1 className="setup-march__title">March Out</h1>
+        <p className="setup-eyebrow">{t("setup.musterAssembled")}</p>
+        <h1 className="setup-march__title">{t("setup.marchOut")}</h1>
         <p className="setup-march__scenario">
           {scenario.title} — {scenario.objective.toLowerCase()}.
         </p>
@@ -58,15 +60,15 @@ export function MarchReview({
           <div className="setup-march__seat" key={`march-${index}`}>
             <img src={getHeroTokenUrl(heroId)} alt={HERO_NAMES[heroId]} />
             <span className="setup-march__name">{HERO_NAMES[heroId]}</span>
-            <span className="setup-march__role">Player {index + 1}</span>
+            <span className="setup-march__role">{t("setup.player")} {index + 1}</span>
           </div>
         ))}
       </div>
 
       <div className="setup-march__facts">
-        <Plate k="Party" v={`${party.length} ${party.length === 1 ? "knight" : "knights"}`} />
-        <Plate k="Length" v={scenario.rounds} />
-        <Plate k="Objective" v={scenario.objective} />
+        <Plate k={t("setup.party")} v={`${party.length} ${party.length === 1 ? t("setup.knight") : t("setup.knights")}`} />
+        <Plate k={t("setup.length")} v={scenario.rounds} />
+        <Plate k={t("setup.objective")} v={scenario.objective} />
       </div>
 
       <div className="setup-march__foot">
@@ -77,14 +79,14 @@ export function MarchReview({
           onClick={onLaunch}
         >
           <span className="setup-seal__disc">
-            March
+            {t("setup.marchOut")}
             <br />
-            Out
+            {t("setup.out")}
           </span>
-          <span className="setup-seal__caption">Begin the scenario</span>
+          <span className="setup-seal__caption">{t("setup.beginScenario")}</span>
         </button>
         <button type="button" className="setup-button setup-button--ghost" onClick={onBack}>
-          ← Adjust the party
+          {t("setup.adjustParty")}
         </button>
       </div>
     </div>

@@ -8,6 +8,7 @@
  */
 
 import { assetUrl } from "../../assets/assetPaths";
+import { useI18n } from "../../i18n";
 import type { SetupScenarioKey, SetupScenarioOption } from "./SetupScreen";
 
 /** Backdrop art per scenario category, sourced from existing site art. */
@@ -57,6 +58,7 @@ export function AdventureStep({
   onPlayerCountChange,
   onNext,
 }: AdventureStepProps) {
+  const { t } = useI18n();
   // Preserve catalog order while grouping by category.
   const groups: { category: string; items: SetupScenarioOption[] }[] = [];
   for (const option of scenarios) {
@@ -75,8 +77,8 @@ export function AdventureStep({
     <div className="setup-beat setup-beat--enter setup-adventure">
       <aside className="setup-adventure__rail">
         <div className="setup-adventure__rail-head">
-          <p className="setup-eyebrow">Choose your adventure</p>
-          <b>{scenarios.length} scenarios</b>
+          <p className="setup-eyebrow">{t("setup.chooseAdventure")}</p>
+          <b>{t("setup.scenarios", { count: scenarios.length })}</b>
         </div>
         <div className="setup-adventure__list">
           {groups.map((group) => (
@@ -109,7 +111,7 @@ export function AdventureStep({
         </div>
       </aside>
 
-      <section className="setup-feature" aria-label="Scenario detail">
+      <section className="setup-feature" aria-label={t("setup.scenarioDetail")}>
         {art && (
           <div
             className="setup-feature__art"
@@ -123,24 +125,24 @@ export function AdventureStep({
           <p className="setup-feature__premise">{scenario.premise}</p>
 
           <div className="setup-feature__stats">
-            <Plate k="Players" v={playersLabel(scenario)} />
-            <Plate k="Length" v={scenario.rounds} />
-            <Plate k="At table" v={scenario.tableLength} />
-            <Plate k="Objective" v={scenario.objective} />
+            <Plate k={t("setup.players")} v={playersLabel(scenario)} />
+            <Plate k={t("setup.length")} v={scenario.rounds} />
+            <Plate k={t("setup.atTable")} v={scenario.tableLength} />
+            <Plate k={t("setup.objective")} v={scenario.objective} />
           </div>
 
           <div className="setup-feature__spacer" />
 
           <div className="setup-feature__seats">
             <div className="setup-feature__seats-head">
-              <span className="setup-feature__seats-label">Players at the table</span>
+              <span className="setup-feature__seats-label">{t("setup.playersAtTable")}</span>
               <span className="setup-feature__seats-hint">
                 {soloOnly
-                  ? "A solo trial — one seat."
-                  : `This scenario seats ${scenario.minPlayers} to ${scenario.maxPlayers}.`}
+                  ? t("setup.soloTrial")
+                  : t("setup.scenarioSeats", { min: scenario.minPlayers, max: scenario.maxPlayers })}
               </span>
             </div>
-            <div className="setup-count" role="group" aria-label="Number of players">
+            <div className="setup-count" role="group" aria-label={t("setup.numberOfPlayers")}>
               {Array.from({ length: maxPlayers }, (_, index) => {
                 const count = index + 1;
                 const available =
@@ -153,10 +155,10 @@ export function AdventureStep({
                     disabled={!available}
                     onClick={() => onPlayerCountChange(count)}
                     aria-pressed={playerCount === count}
-                    aria-label={`${count} player${count === 1 ? "" : "s"}`}
+                    aria-label={`${count} ${count === 1 ? t("setup.player") : t("setup.playersPlural")}`}
                   >
                     <span className="setup-count__n">{count}</span>
-                    <span className="setup-count__u">{count === 1 ? "player" : "players"}</span>
+                    <span className="setup-count__u">{count === 1 ? t("setup.player") : t("setup.playersPlural")}</span>
                   </button>
                 );
               })}
@@ -170,7 +172,7 @@ export function AdventureStep({
               disabled={!isLaunchable}
               onClick={onNext}
             >
-              Take your seats →
+              {t("setup.takeSeats")}
             </button>
           </div>
         </div>

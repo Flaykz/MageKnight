@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import type { HeroId } from "@mage-knight/shared";
 import { HERO_LORE, HERO_NAMES } from "@mage-knight/shared";
 import { getHeroTokenUrl } from "../../assets/assetPaths";
+import { useI18n } from "../../i18n";
 
 type ManaAffinity = "red" | "blue" | "green" | "white";
 
@@ -28,6 +29,15 @@ const HERO_SHORT_TITLE: Record<HeroId, string> = {
   krang: "the Reforged Shaman",
   braevalar: "the Storm Druid",
 };
+const HERO_SHORT_TITLE_FR: Record<HeroId, string> = {
+  arythea: "la prêtresse du sang",
+  tovak: "chef du neuvième cercle",
+  goldyx: "le plus puissant des Draconum",
+  norowas: "le plus grand des seigneurs elfes",
+  wolfhawk: "la lame silencieuse",
+  krang: "le chaman reforgé",
+  braevalar: "le druide des tempêtes",
+};
 
 const HERO_MANA: Record<HeroId, ManaAffinity> = {
   arythea: "red",
@@ -37,13 +47,6 @@ const HERO_MANA: Record<HeroId, ManaAffinity> = {
   wolfhawk: "red",
   krang: "green",
   braevalar: "blue",
-};
-
-const MANA_LABEL: Record<ManaAffinity, string> = {
-  red: "Red affinity",
-  blue: "Blue affinity",
-  green: "Green affinity",
-  white: "White affinity",
 };
 
 const MANA_COLOR: Record<ManaAffinity, string> = {
@@ -60,10 +63,10 @@ interface HeroMeta {
   readonly flavor: string;
 }
 
-function metaFor(heroId: HeroId): HeroMeta {
+function metaFor(heroId: HeroId, locale: "en" | "fr" = "en"): HeroMeta {
   return {
     name: HERO_NAMES[heroId],
-    title: HERO_SHORT_TITLE[heroId],
+    title: locale === "fr" ? HERO_SHORT_TITLE_FR[heroId] : HERO_SHORT_TITLE[heroId],
     mana: HERO_MANA[heroId],
     flavor: HERO_LORE[heroId].flavorText,
   };
@@ -92,6 +95,7 @@ export function MusterStep({
   onClearSeat,
   onNext,
 }: MusterStepProps) {
+  const { locale, t } = useI18n();
   // Scrubbing the roster (hover/focus) previews a hero in the spotlight without
   // committing anything — mirrors a fighting-game character-select screen where
   // browsing and locking in are distinct gestures.
@@ -107,9 +111,13 @@ export function MusterStep({
   }, [activeSeatIndex, seats, availableHeroes]);
 
   const spotlightId = previewHeroId ?? defaultSpotlightId;
-  const spotlight = metaFor(spotlightId);
+  const spotlight = metaFor(spotlightId, locale);
   const spotlightSeat = seats.indexOf(spotlightId);
   const spotlightTaken = spotlightSeat >= 0;
+  const manaLabel: Record<ManaAffinity, string> = {
+    red: t("setup.redAffinity"), blue: t("setup.blueAffinity"),
+    green: t("setup.greenAffinity"), white: t("setup.whiteAffinity"),
+  };
 
   // Committing to a seat (assign/select/clear) drops any stale hover preview
   // so the spotlight snaps back to reflect the new committed state.
@@ -132,10 +140,10 @@ export function MusterStep({
       onMouseLeave={() => setPreviewHeroId(null)}
     >
       {/* seats */}
-      <div className="setup-seats" aria-label="Player seats">
+      <div className="setup-seats" aria-label={t("setup.playerSeats")}>
         {Array.from({ length: playerCount }, (_, index) => {
           const heroId = seats[index] ?? null;
-          const meta = heroId ? metaFor(heroId) : null;
+          const meta = heroId ? metaFor(heroId, locale) : null;
           const isActive = index === activeSeatIndex;
           return (
             <button
@@ -147,9 +155,9 @@ export function MusterStep({
               onClick={() => selectSeat(index)}
               onMouseEnter={() => heroId && setPreviewHeroId(heroId)}
               onFocus={() => heroId && setPreviewHeroId(heroId)}
-              aria-label={`Seat ${index + 1}${meta ? `: ${meta.name}` : ": open"}`}
+              aria-label={`${t("setup.seat")} ${index + 1}${meta ? `: ${meta.name}` : `: ${t("setup.openSeat")}`}`}
             >
-              <span className="setup-seat__no">Seat {index + 1}</span>
+              <span className="setup-seat__no">{t("setup.seat")} {index + 1}</span>
               <span className="setup-seat__art">
                 {heroId ? (
                   <img
@@ -165,9 +173,9 @@ export function MusterStep({
                 )}
               </span>
               <span className={`setup-seat__name ${heroId ? "" : "is-vacant"}`}>
-                {meta ? meta.name : "Open seat"}
+                {meta ? meta.name : t("setup.openSeat")}
               </span>
-              <span className="setup-seat__role">Player {index + 1}</span>
+              <span className="setup-seat__role">{t("setup.player")} {index + 1}</span>
               {heroId && (
                 <span
                   className="setup-seat__remove"
@@ -184,7 +192,7 @@ export function MusterStep({
                       clearSeat(index);
                     }
                   }}
-                  aria-label={`Remove ${meta?.name ?? "hero"} from seat ${index + 1}`}
+                  aria-label={t("setup.removeHero", { hero: meta?.name ?? "hero", seat: index + 1 })}
                 >
                   ×
                 </span>
@@ -215,7 +223,7 @@ export function MusterStep({
           <div className="setup-roster__detail" key={`detail-${spotlightId}`}>
             <span className="setup-roster__mana">
               <i style={{ color: MANA_COLOR[spotlight.mana], background: MANA_COLOR[spotlight.mana] }} />
-              <span>{MANA_LABEL[spotlight.mana]}</span>
+              <span>{manaLabel[spotlight.mana]}</span>
             </span>
             <h2 className="setup-roster__name">{spotlight.name}</h2>
             <p className="setup-roster__title">{spotlight.title}</p>
@@ -223,13 +231,13 @@ export function MusterStep({
             <div className="setup-roster__cta">
               {spotlightTaken ? (
                 <>
-                  <span className="setup-roster__taken">Seated — Player {spotlightSeat + 1}</span>
+                  <span className="setup-roster__taken">{t("setup.seated", { player: spotlightSeat + 1 })}</span>
                   <button
                     type="button"
                     className="setup-button setup-button--ghost"
                     onClick={() => clearSeat(spotlightSeat)}
                   >
-                    Open this seat
+                    {t("setup.openThisSeat")}
                   </button>
                 </>
               ) : activeSeatIndex >= 0 ? (
@@ -238,11 +246,11 @@ export function MusterStep({
                   className="setup-button setup-button--primary"
                   onClick={() => assignHero(spotlightId)}
                 >
-                  Seat as Player {activeSeatIndex + 1}
+                  {t("setup.seatAsPlayer", { player: activeSeatIndex + 1 })}
                 </button>
               ) : (
                 <span className="setup-roster__taken setup-roster__taken--muted">
-                  Every seat is filled
+                  {t("setup.everySeatFilled")}
                 </span>
               )}
             </div>
@@ -255,14 +263,14 @@ export function MusterStep({
         <span className="setup-muster__status">
           {allSelected ? (
             <>
-              <b>Party assembled.</b> {playerCount} {playerCount === 1 ? "knight" : "knights"} ready to march.
+              <><b>{t("setup.partyAssembled")}</b> {playerCount} {playerCount === 1 ? t("setup.knight") : t("setup.knights")} {t("setup.readyToMarch")}</>
             </>
           ) : activeSeatIndex >= 0 ? (
             <>
-              <b>Seating Player {activeSeatIndex + 1}.</b> Choose a hero from the roster below.
+              <><b>{t("setup.seatingPlayer", { player: activeSeatIndex + 1 })}</b> {t("setup.chooseHero")}</>
             </>
           ) : (
-            <>Select an open seat to assign a hero.</>
+            <>{t("setup.selectOpenSeat")}</>
           )}
         </span>
         <button
@@ -271,14 +279,14 @@ export function MusterStep({
           disabled={!allSelected}
           onClick={onNext}
         >
-          Review the muster →
+          {t("setup.reviewMuster")}
         </button>
       </div>
 
       {/* filmstrip */}
-      <div className="setup-strip" role="listbox" aria-label="Hero roster">
+      <div className="setup-strip" role="listbox" aria-label={t("setup.heroRoster")}>
         {availableHeroes.map((heroId) => {
-          const meta = metaFor(heroId);
+          const meta = metaFor(heroId, locale);
           const seatOf = seats.indexOf(heroId);
           const taken = seatOf >= 0;
           const disabledForActive = taken && seatOf !== activeSeatIndex;

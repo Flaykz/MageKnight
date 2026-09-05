@@ -15,6 +15,7 @@ import { GameContext, type ActionLogEntry, type GameAction, type GameContextValu
 import { RustGameConnection, type ConnectionStatus } from "../rust/RustGameConnection";
 import type { LegalAction } from "../rust/types";
 import { HotseatPassScreen } from "../components/HotseatPassScreen";
+import { useI18n } from "../i18n";
 
 interface GameProviderProps {
   children: ReactNode;
@@ -35,6 +36,7 @@ let nextLogId = 1;
 
 export function GameProvider(props: GameProviderProps) {
   const { children, serverUrl, gameConfig, seed, playerId } = props;
+  const { t } = useI18n();
   const [state, setState] = useState<ClientGameState | null>(null);
   const [events, setEvents] = useState<readonly GameEvent[]>([]);
   const [actionLog, setActionLog] = useState<ActionLogEntry[]>([]);
@@ -201,7 +203,7 @@ export function GameProvider(props: GameProviderProps) {
   if (rustConnectionStatus === "connecting" || rustConnectionStatus === null) {
     return (
       <div className="loading-screen">
-        <p>Connecting to Rust server...</p>
+        <p>{t("loading.connecting")}</p>
       </div>
     );
   }
@@ -209,7 +211,7 @@ export function GameProvider(props: GameProviderProps) {
   if (rustConnectionStatus === "reconnecting") {
     return (
       <div className="loading-screen">
-        <p>Reconnecting to Rust server...</p>
+        <p>{t("loading.reconnecting")}</p>
       </div>
     );
   }
@@ -217,10 +219,10 @@ export function GameProvider(props: GameProviderProps) {
   if (rustConnectionStatus === "error") {
     return (
       <div className="loading-screen error">
-        <p>Connection Error</p>
-        <p className="error-message">Failed to connect to Rust server</p>
+        <p>{t("loading.connectionError")}</p>
+        <p className="error-message">{t("loading.failedConnection")}</p>
         <p className="error-hint">
-          Make sure mk-server is running: <code>cargo run --release -p mk-server</code>
+          {t("loading.serverHint")}
         </p>
       </div>
     );
@@ -230,7 +232,7 @@ export function GameProvider(props: GameProviderProps) {
   if (!state) {
     return (
       <div className="loading-screen">
-        <p>Initializing game...</p>
+        <p>{t("loading.initializing")}</p>
       </div>
     );
   }

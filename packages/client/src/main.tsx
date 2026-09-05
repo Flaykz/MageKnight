@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { LanguageProvider } from "./i18n";
 import { loadAtlas } from "./utils/cardAtlas";
 import { preloadAllSpriteSheets } from "./components/PixiCard/PixiCardCanvas";
 import "./styles/index.css";
@@ -30,7 +31,9 @@ if (!rootElement) {
 loadAtlas().then(() => {
   createRoot(rootElement).render(
     <StrictMode>
-      <App />
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
     </StrictMode>
   );
 

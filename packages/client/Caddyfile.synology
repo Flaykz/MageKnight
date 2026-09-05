@@ -1,0 +1,19 @@
+:80 {
+	root * /srv
+
+	handle_path /assets/* {
+		rewrite * /mageknight/v1/assets{path}
+		reverse_proxy https://assets.mageknightdigital.app {
+			header_up Host assets.mageknightdigital.app
+		}
+	}
+
+	handle /ws {
+		reverse_proxy mk-server:3030
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
