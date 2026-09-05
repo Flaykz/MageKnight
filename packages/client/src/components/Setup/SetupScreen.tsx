@@ -283,7 +283,7 @@ export function SetupScreen({ onComplete }: SetupScreenProps) {
   const scenario = getSetupScenario(selectedScenarioKey);
   const localizedScenarios = useMemo(
     () => SETUP_SCENARIOS.map((entry) => ({ ...entry, ...scenarioCopy(entry.key, entry) })),
-    [locale, scenarioCopy]
+    [scenarioCopy]
   );
   const localizedScenario = localizedScenarios.find((entry) => entry.key === selectedScenarioKey) ?? scenario;
   const localizedCategoryLabels = locale === "fr"
