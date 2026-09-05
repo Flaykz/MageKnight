@@ -18,6 +18,7 @@ import {
   useState,
   useCallback,
   useRef,
+  useEffect,
   type ReactNode,
 } from "react";
 import type { AttackType, AttackElement } from "@mage-knight/shared";
